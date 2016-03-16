@@ -170,13 +170,24 @@ execute_dokku_cmd() {
 
 case "$1" in
   help|'')
-    echo "Usage: dokku [--quiet|--trace|--rm-container|--rm|--force] COMMAND <app> [command-specific-options]"
-    echo ""
-    echo "Options:"
+    export LC_ALL=C # so sort will respect non alpha
+    echo -e "Usage: dokku [--quiet|--trace|--rm-container|--rm|--force] COMMAND <app> [command-specific-options]\n"
+    echo "Primary help options, type \"dokku COMMAND:help\" for more details, or dokku help --all to see all commands."
+    echo -e "\nCommands:\n"
 
-    cat<<EOF | trigger-plugn trigger commands help | sort | column -c2 -t -s,
-    help, Print the list of commands
+    if [[ "$2" == "--all" ]] ; then
+        cat<<EOF | trigger-plugn trigger commands help | sort | column -c2 -t -s,
 EOF
+    else
+        export PLUGIN_PATH="$PLUGIN_CORE_PATH"
+        cat<<EOF | trigger-plugn trigger commands help | sort | sed -e '/^.*:/d' -e 's/\s[\[\<\-\(].*,/,/' | column -c2 -t -s,
+EOF
+        echo -e "\nCommunity plugin commands:\n"
+        export PLUGIN_PATH="$PLUGIN_COMMUNITY_PATH"
+        cat<<EOF | trigger-plugn trigger commands help | sort | column -c2 -t -s,
+EOF
+        unset PLUGIN_PATH
+    fi
     ;;
 
   *)
