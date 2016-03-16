@@ -9,7 +9,7 @@ tar_in_cmd() {
 
   verify_app_name "$2"
   tee "$DOKKU_ROOT/$APP/src.tar" | wc -c
-  plugn trigger receive-app "$APP"
+  trigger-plugn trigger receive-app "$APP"
 }
 
 tar_in_cmd "$@"

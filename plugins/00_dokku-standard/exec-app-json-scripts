@@ -33,7 +33,7 @@ execute_script() {
     local COMMAND+=" $SCRIPT_CMD ; "
     local COMMAND+=" echo removing installation cache... ; "
     local COMMAND+=" rm -rf /tmp/cache || true "
-    local DOCKER_ARGS=$(: | plugn trigger docker-args-deploy "$APP")
+    local DOCKER_ARGS=$(: | trigger-plugn trigger docker-args-deploy "$APP")
     local CACHE_DIR="$DOKKU_ROOT/$APP/cache"
     # shellcheck disable=SC2086
     local id=$(docker run "$DOKKU_GLOBAL_RUN_ARGS" --label=dokku_phase_script="${PHASE_SCRIPT_KEY}" -d -v "$CACHE_DIR:/cache" $DOCKER_ARGS "$IMAGE" /bin/bash -c "$COMMAND")

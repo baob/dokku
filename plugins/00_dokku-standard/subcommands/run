@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
-source "$PLUGIN_AVAILABLE_PATH/config/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 
 dokku_run_cmd() {
   declare desc="runs command in container based on app image"
@@ -18,7 +18,7 @@ dokku_run_cmd() {
     local DOKKU_RM_CONTAINER=${DOKKU_APP_RM_CONTAINER:="$DOKKU_GLOBAL_RM_CONTAINER"}
   fi
 
-  local DOCKER_ARGS=$(: | plugn trigger docker-args-run "$APP" "$IMAGE_TAG")
+  local DOCKER_ARGS=$(: | trigger-plugn trigger docker-args-run "$APP" "$IMAGE_TAG")
   [[ "$DOKKU_TRACE" ]] && local DOCKER_ARGS+=" -e TRACE=true "
   [[ "$DOKKU_RM_CONTAINER" ]] && local DOKKU_RUN_OPTS="--rm"
   has_tty && local DOKKU_RUN_OPTS+=" -i -t"

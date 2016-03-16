@@ -57,10 +57,8 @@ copyfiles:
 		rm -rf ${CORE_PLUGINS_PATH}/$$plugin && \
 		rm -rf ${PLUGINS_PATH}/$$plugin && \
 		cp -R plugins/$$plugin ${CORE_PLUGINS_PATH}/available && \
-		ln -s ${CORE_PLUGINS_PATH}/available/$$plugin ${PLUGINS_PATH}/available; \
 		find /var/lib/dokku/ -xtype l -delete;\
 		PLUGIN_PATH=${CORE_PLUGINS_PATH} plugn enable $$plugin ;\
-		PLUGIN_PATH=${PLUGINS_PATH} plugn enable $$plugin ;\
 		done
 	chown dokku:dokku -R ${PLUGINS_PATH} ${CORE_PLUGINS_PATH}
 	$(MAKE) addman

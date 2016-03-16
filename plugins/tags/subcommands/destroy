@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
-source "$PLUGIN_AVAILABLE_PATH/tags/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/tags/functions"
 
 tags_destroy_cmd() {
   declare desc="destroys an app image tag via command line"
@@ -19,7 +19,7 @@ tags_destroy_cmd() {
       docker rmi "$IMAGE_REPO:$IMAGE_TAG"
       ;;
   esac
-  plugn trigger tags-destroy "$APP" "$IMAGE_TAG"
+  trigger-plugn trigger tags-destroy "$APP" "$IMAGE_TAG"
 }
 
 tags_destroy_cmd "$@"

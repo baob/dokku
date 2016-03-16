@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
-source "$PLUGIN_AVAILABLE_PATH/config/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 
 dokku_release_cmd() {
   declare desc="release phase"
@@ -11,7 +11,7 @@ dokku_release_cmd() {
 
   case "$IMAGE_SOURCE_TYPE" in
     herokuish)
-      plugn trigger pre-release-buildpack "$APP" "$IMAGE_TAG"
+      trigger-plugn trigger pre-release-buildpack "$APP" "$IMAGE_TAG"
       if [[ -n $(config_export global) ]]; then
         local id=$(config_export global | docker run "$DOKKU_GLOBAL_RUN_ARGS" -i -a stdin "$IMAGE" /bin/bash -c "mkdir -p /app/.profile.d && cat > /app/.profile.d/00-global-env.sh")
         test "$(docker wait "$id")" -eq 0
@@ -22,13 +22,13 @@ dokku_release_cmd() {
         test "$(docker wait "$id")" -eq 0
         docker commit "$id" "$IMAGE" > /dev/null
       fi
-      plugn trigger post-release-buildpack "$APP" "$IMAGE_TAG"
+      trigger-plugn trigger post-release-buildpack "$APP" "$IMAGE_TAG"
       ;;
 
     dockerfile)
       # buildstep plugins don't necessarily make sense for dockerfiles. call the new breed!!!
-      plugn trigger pre-release-dockerfile "$APP" "$IMAGE_TAG"
-      plugn trigger post-release-dockerfile "$APP" "$IMAGE_TAG"
+      trigger-plugn trigger pre-release-dockerfile "$APP" "$IMAGE_TAG"
+      trigger-plugn trigger post-release-dockerfile "$APP" "$IMAGE_TAG"
       ;;
 
     *)

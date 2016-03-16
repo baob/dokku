@@ -11,7 +11,7 @@ apps_create() {
 
   mkdir -p "$DOKKU_ROOT/$APP"
   echo "Creating $APP... done"
-  plugn trigger post-create "$APP"
+  trigger-plugn trigger post-create "$APP"
 }
 
 apps_destroy() {
@@ -32,7 +32,7 @@ apps_destroy() {
 
   echo "Destroying $APP (including all add-ons)"
 
-  plugn trigger pre-delete "$APP" "$IMAGE_TAG"
+  trigger-plugn trigger pre-delete "$APP" "$IMAGE_TAG"
   local DOKKU_APP_CIDS=$(get_app_container_ids "$APP")
   local cid
 
@@ -43,5 +43,5 @@ apps_destroy() {
     done
   fi
 
-  plugn trigger post-delete "$APP" "$IMAGE_TAG"
+  trigger-plugn trigger post-delete "$APP" "$IMAGE_TAG"
 }

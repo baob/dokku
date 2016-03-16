@@ -117,7 +117,7 @@ dokku_log_event() {
 }
 
 dokku_log_plugn_trigger_call() {
-  declare desc="log plugn trigger calls"
+  declare desc="log trigger-plugn trigger calls"
 
   local l_hook="$1" ; shift
   dokku_log_event "INVOKED: ${l_hook}( $* ) NAME=$NAME FINGERPRINT=$FINGERPRINT"
@@ -377,7 +377,7 @@ is_app_running() {
 
 release_and_deploy() {
   declare desc="main function for releasing and deploying an app"
-  source "$PLUGIN_AVAILABLE_PATH/config/functions"
+  source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 
   local APP="$1"; local IMAGE_TAG="$2"; local IMAGE=$(get_app_image_name "$APP" "$IMAGE_TAG")
   verify_app_name "$APP"
@@ -442,7 +442,7 @@ dokku_auth() {
   declare desc="calls user-auth plugin trigger"
   export SSH_USER=${SSH_USER:=$USER}
   export SSH_NAME=${NAME:="default"}
-  if ! plugn trigger user-auth "$SSH_USER" "$SSH_NAME" "$@" ; then
+  if ! trigger-plugn trigger user-auth "$SSH_USER" "$SSH_NAME" "$@" ; then
     return 1
   fi
   return 0
@@ -509,7 +509,7 @@ is_global_vhost_enabled() {
 
 is_app_vhost_enabled() {
   declare desc="returns true or false if vhost support is enabled for a given application"
-  source "$PLUGIN_AVAILABLE_PATH/config/functions"
+  source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 
   local APP=$1; verify_app_name "$APP"
   local NO_VHOST=$(config_get "$APP" NO_VHOST)
@@ -524,7 +524,7 @@ is_app_vhost_enabled() {
 
 disable_app_vhost() {
   declare desc="disable vhost support for given application"
-  source "$PLUGIN_AVAILABLE_PATH/config/functions"
+  source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 
   local APP=$1; verify_app_name "$APP"
   local APP_VHOST_FILE="$DOKKU_ROOT/$APP/VHOST"
@@ -554,7 +554,7 @@ disable_app_vhost() {
 
 enable_app_vhost() {
   declare desc="enable vhost support for given application"
-  source "$PLUGIN_AVAILABLE_PATH/config/functions"
+  source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 
   local APP=$1; verify_app_name "$APP"
 
@@ -572,7 +572,7 @@ get_dockerfile_exposed_ports() {
 
 get_app_raw_tcp_ports() {
   declare desc="extracts raw tcp port numbers from DOCKERFILE_PORTS config variable"
-  source "$PLUGIN_AVAILABLE_PATH/config/functions"
+  source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 
   local APP="$1"; verify_app_name "$APP"
   local DOCKERFILE_PORTS="$(config_get "$APP" DOKKU_DOCKERFILE_PORTS)"
@@ -601,8 +601,8 @@ get_container_ports() {
 
 get_app_urls() {
   declare desc="print an app's available urls"
-  source "$PLUGIN_AVAILABLE_PATH/config/functions"
-  source "$PLUGIN_AVAILABLE_PATH/proxy/functions"
+  source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
+  source "$PLUGIN_CORE_AVAILABLE_PATH/proxy/functions"
 
   local APP="$2"; verify_app_name "$APP"
   local RAW_TCP_PORTS="$(get_app_raw_tcp_ports "$APP")"
@@ -688,4 +688,17 @@ get_json_keys() {
   else
     cat | python -c 'import json,sys;obj=json.load(sys.stdin);print " ".join(obj'"${JSON_NODE}"'.keys())';
   fi
+}
+
+trigger-plugn() {
+  declare desc="plugn wrapper to support mutiple PLUGIN_PATH"
+  if [[ -n "$PLUGIN_PATH" ]]; then
+    plugn "$@"
+  else
+    export PLUGIN_PATH="$PLUGIN_CORE_PATH"
+    plugn "$@"
+    export PLUGIN_PATH="$PLUGIN_COMMUNITY_PATH"
+    plugn "$@"
+  fi
+  unset PLUGIN_PATH
 }

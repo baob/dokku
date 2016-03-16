@@ -110,7 +110,7 @@ ps_stop() {
     echo "Stopping $APP ..."
     # shellcheck disable=SC2086
     docker stop $DOKKU_APP_RUNNING_CONTAINER_IDS > /dev/null || true
-    plugn trigger post-stop "$APP"
+    trigger-plugn trigger post-stop "$APP"
   else
     echo "App $APP already stopped"
   fi
@@ -120,7 +120,7 @@ ps_rebuild() {
   declare desc="rebuilds app from base image"
   local APP="$1"; verify_app_name "$APP"
 
-  plugn trigger receive-app "$APP"
+  trigger-plugn trigger receive-app "$APP"
 }
 
 ps_restart() {

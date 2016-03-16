@@ -29,7 +29,7 @@ get_default_vhost() {
     local VHOST=$(get_global_vhost)
     if ! ([[ "$VHOST" =~ $RE_IPV4 ]] || [[ "$VHOST" =~ $RE_IPV6 ]]); then
       local SUBDOMAIN=${APP/%\.${VHOST}/}
-      local hostname=$(: | plugn trigger nginx-hostname "$APP" "$SUBDOMAIN" "$VHOST")
+      local hostname=$(: | trigger-plugn trigger nginx-hostname "$APP" "$SUBDOMAIN" "$VHOST")
       if [[ ! -n $hostname ]]; then
         if [[ "$APP" == *.* ]] && [[ "$SUBDOMAIN" == "$APP" ]]; then
           local hostname="${APP/\//-}"
@@ -81,7 +81,7 @@ domains_add() {
     domains_enable "$APP" --no-restart
   fi
 
-  plugn trigger post-domains-update "$APP" "add" "$@"
+  trigger-plugn trigger post-domains-update "$APP" "add" "$@"
 }
 
 domains_remove() {
@@ -95,7 +95,7 @@ domains_remove() {
     sed -i "/^$DOMAIN$/d" "$DOKKU_ROOT/$APP/VHOST"
     dokku_log_info1 "Removed $DOMAIN from $APP"
   done
-  plugn trigger post-domains-update "$APP" "remove" "$@"
+  trigger-plugn trigger post-domains-update "$APP" "remove" "$@"
 }
 
 domains_disable() {

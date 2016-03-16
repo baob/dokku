@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
-source "$PLUGIN_AVAILABLE_PATH/checks/functions"
-source "$PLUGIN_AVAILABLE_PATH/config/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/checks/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 source "$PLUGIN_CORE_AVAILABLE_PATH/proxy/functions"
 
 dokku_deploy_cmd() {
@@ -11,13 +11,13 @@ dokku_deploy_cmd() {
   [[ -z $2 ]] && dokku_log_fail "Please specify an app to deploy"
   local APP="$2"; local IMAGE_TAG="$3"; local IMAGE=$(get_app_image_name "$APP" "$IMAGE_TAG")
   verify_app_name "$APP"
-  plugn trigger pre-deploy "$APP" "$IMAGE_TAG"
+  trigger-plugn trigger pre-deploy "$APP" "$IMAGE_TAG"
 
   is_image_herokuish_based "$IMAGE" && local DOKKU_HEROKUISH=true
   local DOKKU_SCALE_FILE="$DOKKU_ROOT/$APP/DOKKU_SCALE"
   local oldids=$(get_app_container_ids "$APP")
 
-  local DOKKU_DEFAULT_DOCKER_ARGS=$(: | plugn trigger docker-args-deploy "$APP" "$IMAGE_TAG")
+  local DOKKU_DEFAULT_DOCKER_ARGS=$(: | trigger-plugn trigger docker-args-deploy "$APP" "$IMAGE_TAG")
   local DOKKU_IS_APP_PROXY_ENABLED="$(is_app_proxy_enabled "$APP")"
 
   local line
@@ -98,7 +98,7 @@ dokku_deploy_cmd() {
       else
         trap 'kill_new $id' INT TERM EXIT
         dokku_log_info1 "Running pre-flight checks"
-        plugn trigger check-deploy  "$APP" "$id" "$PROC_TYPE" "$port" "$ipaddr"
+        trigger-plugn trigger check-deploy  "$APP" "$id" "$PROC_TYPE" "$port" "$ipaddr"
         trap -        INT TERM EXIT
       fi
 
@@ -126,7 +126,7 @@ dokku_deploy_cmd() {
   done < "$DOKKU_SCALE_FILE"
 
   dokku_log_info1 "Running post-deploy"
-  plugn trigger post-deploy "$APP" "$port" "$ipaddr" "$IMAGE_TAG"
+  trigger-plugn trigger post-deploy "$APP" "$port" "$ipaddr" "$IMAGE_TAG"
 
   # kill the old container
   if [[ -n "$oldids" ]]; then
@@ -154,7 +154,7 @@ dokku_deploy_cmd() {
         # on to the next.
         docker stop "$oldid" \
         || docker kill "$oldid" \
-        || plugn trigger retire-container-failed "$APP" # plugin trigger for event logging
+        || trigger-plugn trigger retire-container-failed "$APP" # plugin trigger for event logging
       done
     ) & disown -a
     # Use trap since disown/nohup don't seem to keep child alive

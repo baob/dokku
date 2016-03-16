@@ -6,18 +6,21 @@ disable_plugin() {
   declare desc="disables specified plugin name"
   local PLUGIN="$1"
   [[ -e $PLUGIN_CORE_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Cannot disable a core plugin"
-  [[ ! -e $PLUGIN_ENABLED_PATH/$PLUGIN ]] && dokku_log_fail "Plugin already disabled"
-  [[ ! -e $PLUGIN_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Plugin does not exist"
-  plugn disable "$PLUGIN"
+  [[ ! -e $PLUGIN_COMMUNITY_ENABLED_PATH/$PLUGIN ]] && dokku_log_fail "Plugin already disabled"
+  [[ ! -e $PLUGIN_COMMUNITY_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Plugin does not exist"
+  export PLUGIN_PATH="$PLUGIN_COMMUNITY_PATH"
+  trigger-plugn disable "$PLUGIN"
   dokku_log_info1_quiet "Plugin $PLUGIN disabled"
 }
 
 enable_plugin() {
   declare desc="enables specified plugin name"
   local PLUGIN="$1"
-  [[ -e $PLUGIN_ENABLED_PATH/$PLUGIN ]] && dokku_log_fail "Plugin already enabled"
-  [[ ! -e $PLUGIN_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Plugin does not exist"
-  plugn enable "$PLUGIN"
+  [[ -e $PLUGIN_CORE_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Core plugins always enabled"
+  [[ -e $PLUGIN_COMMUNITY_ENABLED_PATH/$PLUGIN ]] && dokku_log_fail "Plugin already enabled"
+  [[ ! -e $PLUGIN_COMMUNITY_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Plugin does not exist"
+  export PLUGIN_PATH="$PLUGIN_COMMUNITY_PATH"
+  trigger-plugn enable "$PLUGIN"
   dokku_log_info1_quiet "Plugin $PLUGIN enabled"
 }
 
@@ -25,7 +28,8 @@ download_plugin() {
   declare desc="download plugin from URL and set name"
   local PLUGIN_GIT_URL="$1"
   local PLUGIN_NAME="$2"
-  plugn install "$PLUGIN_GIT_URL" "$PLUGIN_NAME"
+  export PLUGIN_PATH="$PLUGIN_COMMUNITY_PATH"
+  trigger-plugn install "$PLUGIN_GIT_URL" "$PLUGIN_NAME"
 }
 
 download_and_enable_plugin() {
@@ -49,7 +53,7 @@ download_and_enable_plugin() {
     esac
   done
   local PLUGIN_NAME=${CUSTOM_NAME:-$(plugin_name "$PLUGIN_GIT_URL")}
-  dokku_log_info1_quiet "Cloning plugin repo $PLUGIN_GIT_URL to $PLUGIN_AVAILABLE_PATH/$PLUGIN_NAME"
+  dokku_log_info1_quiet "Cloning plugin repo $PLUGIN_GIT_URL to $PLUGIN_COMMUNITY_AVAILABLE_PATH/$PLUGIN_NAME"
   download_plugin "$PLUGIN_GIT_URL" "$PLUGIN_NAME"
   enable_plugin "$PLUGIN_NAME"
   if [[ -n "$PLUGIN_COMMITTISH" ]];then
@@ -61,16 +65,19 @@ update_plugin() {
   declare desc="update plugin"
   local PLUGIN="$1"
   local PLUGIN_COMMITTISH="$2"
-  [[ ! -e $PLUGIN_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Plugin ($PLUGIN) is not currently installed"
-  plugn update "$@"
+  [[ -e $PLUGIN_CORE_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Plugin ($PLUGIN) is a core plugin and can not be updated separately"
+  [[ ! -e $PLUGIN_COMMUNITY_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Plugin ($PLUGIN) is not currently installed"
+  export PLUGIN_PATH="$PLUGIN_COMMUNITY_PATH"
+  trigger-plugn update "$@"
 }
 
 uninstall_plugin() {
   declare desc="uninstall plugin"
   local PLUGIN="$1"
   [[ -e $PLUGIN_CORE_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Cannot uninstall a core plugin"
-  [[ ! -e $PLUGIN_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Plugin ($PLUGIN) is not currently installed"
-  plugn uninstall "$PLUGIN"
+  [[ ! -e $PLUGIN_COMMUNITY_AVAILABLE_PATH/$PLUGIN ]] && dokku_log_fail "Plugin ($PLUGIN) is not currently installed"
+  export PLUGIN_PATH="$PLUGIN_COMMUNITY_PATH"
+  trigger-plugn uninstall "$PLUGIN"
   dokku_log_info1_quiet "Plugin $PLUGIN uninstalled"
 }
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
-source "$PLUGIN_AVAILABLE_PATH/apps/functions"
-source "$PLUGIN_AVAILABLE_PATH/ps/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/apps/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/ps/functions"
 
 apps_rename_cmd() {
   declare desc="renames an app"
@@ -21,7 +21,7 @@ apps_rename_cmd() {
   sed -i -e "s/$OLD_APP/$NEW_APP/g" "$DOKKU_ROOT/$NEW_APP/VHOST"
   sed -i -e "s/git-hook $OLD_APP/git-hook $NEW_APP/g" "$DOKKU_ROOT/$NEW_APP/hooks/pre-receive"
   ps_rebuild "$NEW_APP"
-  plugn trigger post-app-rename "$OLD_APP" "$NEW_APP"
+  trigger-plugn trigger post-app-rename "$OLD_APP" "$NEW_APP"
   echo "Renaming $OLD_APP to $NEW_APP... done"
 }
 

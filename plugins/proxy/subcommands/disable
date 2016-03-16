@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
-source "$PLUGIN_AVAILABLE_PATH/config/functions"
-source "$PLUGIN_AVAILABLE_PATH/proxy/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/proxy/functions"
 
 proxy_disable_cmd() {
   declare desc="disable proxy for app via command line"
@@ -15,7 +15,7 @@ proxy_disable_cmd() {
     [[ "$2" == "--no-restart" ]] && local CONFIG_SET_ARGS=$2
     # shellcheck disable=SC2086
     config_set $CONFIG_SET_ARGS $APP DOKKU_DISABLE_PROXY=1
-    plugn trigger proxy-disable "$APP"
+    trigger-plugn trigger proxy-disable "$APP"
   else
     dokku_log_info1 "proxy is already disable for app ($APP)"
   fi

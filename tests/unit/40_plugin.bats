@@ -102,3 +102,9 @@ teardown() {
   echo "status: "$status
   assert_failure
 }
+@test "(plugin) plugin:install-dependencies --core" {
+  run bash -c "sudo -E dokku plugin:install-dependencies --core"
+  echo "output: "$output
+  echo "status: "$status
+  assert_success
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
-source "$PLUGIN_AVAILABLE_PATH/config/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
 
 dokku_build_cmd() {
   declare desc="build phase"
@@ -20,9 +20,9 @@ dokku_build_cmd() {
       test "$(docker wait "$id")" -eq 0
       docker commit "$id" "$IMAGE" > /dev/null
       [[ -d $CACHE_DIR ]] || mkdir "$CACHE_DIR"
-      plugn trigger pre-build-buildpack "$APP"
+      trigger-plugn trigger pre-build-buildpack "$APP"
 
-      local DOCKER_ARGS=$(: | plugn trigger docker-args-build "$APP" "$IMAGE_SOURCE_TYPE")
+      local DOCKER_ARGS=$(: | trigger-plugn trigger docker-args-build "$APP" "$IMAGE_SOURCE_TYPE")
       [[ "$DOKKU_TRACE" ]] && DOCKER_ARGS+=" -e TRACE=true "
       # shellcheck disable=SC2086
       local id=$(docker run $DOKKU_GLOBAL_RUN_ARGS -d -v $CACHE_DIR:/cache -e CACHE_PATH=/cache $DOCKER_ARGS $IMAGE /build)
@@ -30,21 +30,21 @@ dokku_build_cmd() {
       test "$(docker wait "$id")" -eq 0
       docker commit "$id" "$IMAGE" > /dev/null
 
-      plugn trigger post-build-buildpack "$APP"
+      trigger-plugn trigger post-build-buildpack "$APP"
       ;;
 
     dockerfile)
       # extract first port from Dockerfile
       local DOCKERFILE_PORTS=$(get_dockerfile_exposed_ports Dockerfile)
       [[ -n "$DOCKERFILE_PORTS" ]] && config_set --no-restart "$APP" DOKKU_DOCKERFILE_PORTS="$DOCKERFILE_PORTS"
-      plugn trigger pre-build-dockerfile "$APP"
+      trigger-plugn trigger pre-build-dockerfile "$APP"
 
       [[ "$DOKKU_DOCKERFILE_CACHE_BUILD" == "false" ]] && DOKKU_DOCKER_BUILD_OPTS="$DOKKU_DOCKER_BUILD_OPTS --no-cache"
-      local DOCKER_ARGS=$(: | plugn trigger docker-args-build "$APP" "$IMAGE_SOURCE_TYPE")
+      local DOCKER_ARGS=$(: | trigger-plugn trigger docker-args-build "$APP" "$IMAGE_SOURCE_TYPE")
       # shellcheck disable=SC2086
       docker build $DOCKER_ARGS $DOKKU_DOCKER_BUILD_OPTS -t $IMAGE .
 
-      plugn trigger post-build-dockerfile "$APP"
+      trigger-plugn trigger post-build-dockerfile "$APP"
       ;;
 
     *)

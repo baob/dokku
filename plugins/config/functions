@@ -199,7 +199,7 @@ ${var}"
     config_styled_hash "$ENV_ADD" "       "
 
     config_write "$ENV_TEMP"
-    plugn trigger post-config-update "$APP" "set" "$@"
+    trigger-plugn trigger post-config-update "$APP" "set" "$@"
   fi
 
   if [[ "$DOKKU_CONFIG_RESTART" == "true" ]]; then
@@ -231,7 +231,7 @@ config_unset() {
     config_write "$ENV_TEMP"
   done
 
-  plugn trigger post-config-update "$APP" "unset" "$@"
+  trigger-plugn trigger post-config-update "$APP" "unset" "$@"
 
   if [[ "$DOKKU_CONFIG_RESTART" == "true" ]]; then
     dokku_log_info1 "Restarting app $APP"
